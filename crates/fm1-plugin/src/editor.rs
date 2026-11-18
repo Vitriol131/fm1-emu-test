@@ -198,8 +198,10 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                             let source = source.load(std::sync::atomic::Ordering::Relaxed);
                             if source < 0 { continue; }
                             grid.label(midi_control_name(slot));
-                            if source >= 128 { grid.label(format!("Note {}", source - 128)); }
-                            else { grid.label(format!("CC {source}")); }
+                            let channel = source / 256 + 1;
+                            let message = source % 256;
+                            if message >= 128 { grid.label(format!("Ch {channel} · Note {}", message - 128)); }
+                            else { grid.label(format!("Ch {channel} · CC {message}")); }
                             grid.end_row();
                         }
                     });
@@ -363,13 +365,13 @@ fn midi_control_name(slot: usize) -> String {
     match slot {
         0..=6 => format!("FM-1 Encoder {}", slot + 1),
         7 => "FM-1 Master".into(),
-        8..=48 => format!("FM-1 Panel control {}", slot - 8),
+        8..=48 => { let id = (slot - 8) as u8; panel::buttons().iter().find(|b| b.1 == id).map(|b| format!("FM-1 {}", b.0)).unwrap_or_else(|| format!("FM-1 panel key {}", id.saturating_sub(14) + 1)) },
         49..=56 => format!("SMK-37 Encoder {}", slot - 48),
         57..=72 => format!("SMK-37 Pad {}", slot - 56),
         73..=76 => format!("SMK-37 Fader {}", slot - 72),
         77 => "SMK-37 Pitch wheel".into(),
         78 => "SMK-37 Mod wheel".into(),
-        79..=96 => format!("SMK-37 Panel control {}", slot - 78),
+        79..=96 => panel_smk::buttons().get(slot - 79).map(|b| format!("SMK-37 {}", b.0)).unwrap_or_else(|| format!("SMK-37 panel button {}", slot - 78)),
         _ => format!("Panel control {slot}"),
     }
 }
