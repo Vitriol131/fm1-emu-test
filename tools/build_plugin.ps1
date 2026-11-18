@@ -1,4 +1,4 @@
-# Build the FM-1 plugin (Windows, x86-64): the CLAP from Rust (crates/fm1-plugin), then the VST3
+# Build the FM-1 MIDI Learn Fork plugin (Windows, x86-64): the CLAP from Rust (crates/fm1-plugin), then the VST3
 # around it (clap-wrapper, crates/fm1-plugin/wrap). Unlike the macOS bundles, the Windows VST3
 # doesn't carry the CLAP: it loads FM-1-MIDI-Learn-Fork.clap at run time from a CLAP folder (Common Files\CLAP,
 # %LOCALAPPDATA%\Programs\Common\CLAP, or a folder in CLAP_PATH), so both files are installed.
