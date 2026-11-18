@@ -487,9 +487,10 @@ fn key(ui: &mut Ui, link: &Link, id: i32, down: bool) {
 }
 
 fn turn(ui: &mut Ui, link: &Link, smk: bool, i: i32, clicks: i32) {
-    ui.enc_clicks[i as usize] += clicks;
-    ui.turning[i as usize] = 10;
-    let enc = if smk { i as u8 } else { panel::ENCS[i as usize].1 };
+    let slot = if smk { (i - 20) as usize } else { i as usize };
+    ui.enc_clicks[slot] += clicks;
+    ui.turning[slot] = 10;
+    let enc = if smk { (i - 20) as u8 } else { panel::ENCS[i as usize].1 };
     let _ = link.cmds.send(Cmd::Enc { enc, clicks });
 }
 
