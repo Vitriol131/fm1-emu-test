@@ -15,7 +15,9 @@ rel=$out/release
 rm -rf "$rel"
 mkdir -p "$rel/$name"
 for b in FM-1-MIDI-Learn-Fork.component FM-1-MIDI-Learn-Fork.vst3 FM-1-MIDI-Learn-Fork.clap; do
-  lipo "$out/$b/Contents/MacOS/FM-1" -verify_arch arm64 x86_64 ||
+  executable=FM-1-MIDI-Learn-Fork
+  [ "$b" = "FM-1-MIDI-Learn-Fork.clap" ] && executable=FM-1
+  lipo "$out/$b/Contents/MacOS/$executable" -verify_arch arm64 x86_64 ||
     { echo "$out/$b: missing or not universal; run UNIVERSAL=1 tools/build_plugin.sh first" >&2; exit 1; }
   # every bundle says the release's version (0.5.1's AU and VST3 said 0.1.0, the wrapper's own)
   v=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$out/$b/Contents/Info.plist")
@@ -75,23 +77,27 @@ TXT
 rm -rf "$rel/$name"
 
 cat > "$rel/notes.md" <<MD
-The M-VAVE FM-1 emulator as an **instrument plugin**: **AU** (Logic, GarageBand), **VST3**
-(Ableton Live, Cubase, FL Studio, Reaper, Bitwig, Studio One…) and **CLAP**.
+**FM-1 MIDI Learn Fork** is an unofficial, AI-assisted / vibe-coded fork of the M-VAVE FM-1 emulator.
+It adds a distinct plugin identity and an experimental MIDI Learn layer. Use at your own risk;
+no warranty is provided.
 
 - **Load firmware…** loads any \`.fwsc\`: the community firmwares
   ([the list](https://joakimeriksson.github.io/fm1-emu/)) or M-VAVE's own. An SMK-37 package
   gets the SMK-37's panel.
-- MIDI from the DAW plays it; the panel plays with the mouse. *Master* can be automated, and
-  *MIDI channel* moves notes to one channel (M-VAVE's firmware listens on 2).
+- Enable MIDI Learn, click a panel control, then move a MIDI CC or press a MIDI note.
+- The intended Learn targets include FM-1 encoders, Master, buttons and selectors; SMK-37 encoders,
+  pads, faders, wheels, buttons and selectors. The SMK-37's 37 musical keys are excluded.
+- Learned assignments are saved in the DAW project and displayed in the plugin's assignments list.
+- MIDI Learn is experimental: a physical controller and Ableton Live 12 test is still required.
 - The project keeps the firmware and the patches it saves.
 - The emulator's lead over the DAW is reported as latency, so notes land where they were placed.
 
 **Download:** \`$name.zip\`, for Macs with Apple silicon or Intel (macOS 11 or later). Its \`INSTALL.txt\`
 says where each file goes.$( [ -n "$notarized" ] && echo " Signed and notarized." || printf '\n\nThis build is **not signed** with an Apple Developer ID, so macOS blocks it until it is\nallowed. After copying the plug-ins, run once in Terminal:\n\n```sh\nxattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/FM-1-MIDI-Learn-Fork.component ~/Library/Audio/Plug-Ins/VST3/FM-1-MIDI-Learn-Fork.vst3 ~/Library/Audio/Plug-Ins/CLAP/FM-1-MIDI-Learn-Fork.clap\n```' )
 
-It passes Apple's AU validator and Steinberg's VST3 validator. It has been tried in GarageBand
-and Steinberg's VST3 test host. Problems with other DAWs:
-[issues](https://github.com/joakimeriksson/fm1-emu/issues).
+The original upstream project's validation results do not validate this fork. This fork's current
+source changes still require a fresh build, AU/VST3 validation and hands-on DAW/controller testing.
+Report issues at https://github.com/Vitriol131/fm1-emu-test/issues.
 
 MIT licensed, like everything it builds with (nih-plug, clap-wrapper, the CLAP, AudioUnit and
 VST3 SDKs). The firmwares are their authors'.
