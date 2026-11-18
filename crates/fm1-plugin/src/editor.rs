@@ -98,7 +98,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 let name = params.firmware.lock().unwrap().name.clone();
                 let idle = ui.picking.is_none() && ui.job.is_none();
                 let learning = link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed);
-                let learn_label = if learning == -2 { "MIDI Learn: click an encoder…" }
+                let learn_label = if learning == -2 { "MIDI Learn: click a control…" }
                     else if learning >= 0 { "MIDI Learn: move a MIDI CC…" }
                     else { "MIDI Learn" };
                 if bar.button(learn_label).clicked() {
@@ -179,8 +179,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 if let Some(p) = pos {
                     let (x, y) = at(p);
                     let ctl = hit(smk, x, y);
-                    if !smk && (0..7).contains(&ctl)
-                        && link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed) == -2 {
+                    if ctl != -1 && link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed) == -2 {
                         link.shared.midi_learn.store(ctl, std::sync::atomic::Ordering::Relaxed);
                     }
                     let mut g = Grab { ctl, last_y: y, acc: 0.0, held: -1 };
@@ -190,7 +189,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                             velocity(&link, panel_smk_hit_y(x, y));
                         }
                         key(ui, &link, g.held, true);
-                    } else if smk && ctl >= 200 {
+                    } else if smk && (200..216).contains(&ctl) || smk && (300..402).contains(&ctl) {
                         slide(ui, &link, ctl, y);
                     } else if !smk && ctl == 7 {
                         setter.begin_set_parameter(&params.master);
@@ -213,10 +212,10 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                         }
                         key(ui, &link, new, true);
                     }
-                } else if smk && g.ctl >= 300 {
+                } else if smk && (300..402).contains(&g.ctl) {
                     let ctl = g.ctl;
                     slide(ui, &link, ctl, y);
-                } else if g.ctl >= 0 && g.ctl < if smk { 8 } else { 7 } {
+                } else if (!smk && (0..7).contains(&g.ctl)) || (smk && (20..28).contains(&g.ctl)) {
                     // 12 px of drag a click
                     g.acc += g.last_y - y;
                     let clicks = (g.acc / 12.0).trunc();
@@ -262,7 +261,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                         setter.begin_set_parameter(&params.master);
                         setter.set_parameter(&params.master, v);
                         setter.end_set_parameter(&params.master);
-                    } else if (0..if smk { 8 } else { 7 }).contains(&h) {
+                    } else if (!smk && (0..7).contains(&h)) || (smk && (20..28).contains(&h)) {
                         ui.wheel_acc += scroll;
                         while ui.wheel_acc >= 40.0 {
                             ui.wheel_acc -= 40.0;
@@ -453,8 +452,9 @@ fn file_job(action: FileAction, mut path: std::path::PathBuf, params: Arc<Fm1Par
 fn hit(smk: bool, x: f32, y: f32) -> i32 {
     if smk {
         return match panel_smk::hit(x, y) {
-            Some(panel_smk::Ctl::Enc(i)) => i as i32,
-            Some(panel_smk::Ctl::Btn(id)) | Some(panel_smk::Ctl::Key(id, _)) => 100 + id as i32,
+            Some(panel_smk::Ctl::Enc(i)) => 20 + i as i32,
+            Some(panel_smk::Ctl::Btn(id)) => 500 + (id as i32 - 37),
+            Some(panel_smk::Ctl::Key(_, _)) => -1,
             Some(panel_smk::Ctl::Pad(p)) => 200 + p as i32,
             Some(panel_smk::Ctl::Fader(f)) => 300 + f as i32,
             Some(panel_smk::Ctl::Pitch) => 400,
