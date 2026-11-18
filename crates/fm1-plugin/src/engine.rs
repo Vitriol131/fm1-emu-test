@@ -10,7 +10,7 @@
 use fm1_core::{Bus, Cpu};
 use fm1_soc::{machine, Action, Board, Soc};
 use std::collections::VecDeque;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -71,6 +71,13 @@ type Sectors = Vec<(u32, Vec<u8>)>;
 pub struct Shared {
     pub view: Mutex<View>,
     pub quit: AtomicBool,
+    /// MIDI Learn: -2 waits for an encoder click, -1 is idle, 0..6 waits for a CC.
+    pub midi_learn: AtomicI32,
+    /// CC number assigned to each of the seven FM-1 panel encoders; -1 means unassigned.
+    pub midi_map: [AtomicI32; 7],
+    /// Last CC value and fractional detent accumulator for each mapped encoder.
+    pub midi_last: [AtomicI32; 7],
+    pub midi_accum: [AtomicI32; 7],
 }
 
 struct Machine {
