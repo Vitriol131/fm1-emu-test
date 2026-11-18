@@ -1,5 +1,25 @@
 # FM-1 emulator
 
+> **Unofficial experimental fork — vibecoded**
+>
+> This repository is an independent fork of [joakimeriksson/fm1-emu](https://github.com/joakimeriksson/fm1-emu).
+> It is not an official M-VAVE / M-WAVE project and is not affiliated with or endorsed by the original
+> emulator author or the hardware manufacturer. Changes in this fork are developed with AI-assisted
+> "vibe coding" and are experimental. They may contain bugs, regressions, or incomplete features.
+> Use at your own risk. The maintainers of this fork accept no responsibility for damage, data loss,
+> hardware issues, or other consequences arising from its use. Back up your files and projects before
+> testing. No warranty is provided.
+>
+> **Purpose of this fork:** to experiment with improvements to the FM-1 emulator plugin, especially
+> MIDI Learn and contextual MIDI mapping, so that external MIDI controllers (including encoder-based
+> controllers) can control the emulator's on-screen controls. The intended mapping covers the
+> SELECT, PRESETS, ALGORITHM and KNOB1–KNOB4 controls, with behavior that can adapt to the active
+> firmware page or context. This is a development goal, not a claim that every part is already
+> implemented or fully tested.
+>
+> **Version history:** see [CHANGELOG.md](CHANGELOG.md). Entries describe changes made in this fork;
+> they do not imply that a feature has passed testing unless that is explicitly stated.
+
 The **M-VAVE FM-1** is a pocket FM synthesizer, and a small community writes its own firmwares
 for it: drum machines, grooveboxes, ambient generators, a chord harp. This project emulates the
 FM-1 itself, its CPU, screen, keys, knobs and audio, so every one of those firmwares runs
