@@ -101,12 +101,10 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 {
                     let mut saved = params.midi_assignments.lock().unwrap();
                     if saved.len() != link.shared.midi_map.len() { saved.resize(link.shared.midi_map.len(), -1); }
-                    let mut changed = false;
                     for (i, slot) in link.shared.midi_map.iter().enumerate() {
                         let value = slot.load(std::sync::atomic::Ordering::Relaxed);
-                        if saved[i] != value { saved[i] = value; changed = true; }
+                        saved[i] = value;
                     }
-                    let _ = changed;
                 }
                 let master_midi = link.shared.midi_master.swap(-1, std::sync::atomic::Ordering::Relaxed);
                 if master_midi >= 0 {
