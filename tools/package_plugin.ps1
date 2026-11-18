@@ -19,7 +19,7 @@ foreach ($b in 'FM-1-MIDI-Learn-Fork.vst3', 'FM-1-MIDI-Learn-Fork.clap') {
 
 $install = @"
 FM-1 MIDI Learn Fork ${version}: unofficial Vitriol131 fork (VST3, CLAP)
-https://github.com/Vitriol131/fm1-emu-test`nUpstream: https://github.com/joakimeriksson/fm1-emu
+https://github.com/Vitriol131/fm1-emu-test`nUpstream: https://github.com/Vitriol131/fm1-emu-test`nUpstream: https://github.com/joakimeriksson/fm1-emu
 
 For Windows 10 or 11, 64-bit (x86-64).
 
@@ -35,7 +35,7 @@ For Windows 10 or 11, 64-bit (x86-64).
 3. Restart your DAW, or rescan its plug-ins. Add "FM-1 MIDI Learn Fork" (by Vitriol131 Community Fork) as an instrument on a track.
 4. In the plug-in's window, click "Load firmware / save..." and pick a .fwsc package: a community
    firmware (the list, with each author's link: https://joakimeriksson.github.io/fm1-emu/)
-   or M-VAVE's own. Play it from MIDI or with the mouse on its panel.
+   or M-VAVE's own. Play it from MIDI or with the mouse on its panel. Enable MIDI Learn, click a panel control, then move a MIDI CC or press a MIDI note.
 
 The firmware and the patches it saves are kept in your project.
 "@
