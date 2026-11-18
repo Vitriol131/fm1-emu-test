@@ -97,6 +97,13 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 }
                 let name = params.firmware.lock().unwrap().name.clone();
                 let idle = ui.picking.is_none() && ui.job.is_none();
+                let learning = link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed);
+                let learn_label = if learning == -2 { "MIDI Learn: click an encoder…" }
+                    else if learning >= 0 { "MIDI Learn: move a MIDI CC…" }
+                    else { "MIDI Learn" };
+                if bar.button(learn_label).clicked() {
+                    link.shared.midi_learn.store(-2, std::sync::atomic::Ordering::Relaxed);
+                }
                 if bar.add_enabled(idle, egui::Button::new("Load firmware / save…"))
                     .on_hover_text("Open a .fwsc firmware package or a shared .fm1save setup").clicked() {
                     ui.picking = Some((FileAction::Load, pick(FileAction::Load, &name)));
@@ -172,6 +179,10 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 if let Some(p) = pos {
                     let (x, y) = at(p);
                     let ctl = hit(smk, x, y);
+                    if !smk && (0..7).contains(&ctl)
+                        && link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed) == -2 {
+                        link.shared.midi_learn.store(ctl, std::sync::atomic::Ordering::Relaxed);
+                    }
                     let mut g = Grab { ctl, last_y: y, acc: 0.0, held: -1 };
                     if (100..200).contains(&ctl) {
                         g.held = ctl - 100;
