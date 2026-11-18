@@ -653,8 +653,8 @@ impl Cpu {
         macro_rules! sync {
             () => {{
                 self.pc = pc;
-                self.insn_count += (n - synced) as u64;
-                synced = n;
+                let previous = std::mem::replace(&mut synced, n);
+                self.insn_count += (n - previous) as u64;
             }};
         }
         // a runner's stretch (see `stop_pc`): `bound` is where the runner's call in progress
@@ -2798,33 +2798,8 @@ impl Cpu {
         Ok(slots[i].value(insn.raw))
     }
 
-    fn blk(&self, insn: &Instruction, i: usize) -> Result<Vec<u8>, CoreError> {
-        let slots = insn.entry.slots;
-        if i >= slots.len() || slots[i].kind != SlotKind::Blk {
-            return Err(CoreError::MissingSlot {
-                name: insn.entry.name,
-                pc: self.pc,
-                slot: i,
-            });
-        }
-        Ok(slots[i].block_regs(insn.raw))
-    }
-
     fn reg(&self, insn: &Instruction, i: usize) -> Result<usize, CoreError> {
         Ok(self.slot(insn, i)? as usize & 0xf)
-    }
-
-    fn load(&self, insn: &Instruction, i: usize) -> Result<u32, CoreError> {
-        let n = self.blk(insn, i)?;
-        Ok(if n.is_empty() { 0 } else { self.regs[n[0] as usize] })
-    }
-
-    fn store_r(&mut self, insn: &Instruction, i: usize, v: u32) -> Result<(), CoreError> {
-        let n = self.blk(insn, i)?;
-        if !n.is_empty() {
-            self.regs[n[0] as usize] = v;
-        }
-        Ok(())
     }
 
     fn branch(&self, insn: &Instruction, i: usize) -> Result<Option<u32>, CoreError> {
@@ -4552,16 +4527,6 @@ fn raw_v(insn: &Instruction) -> u64 {
     insn.raw
 }
 
-/// Parse the `rHI_rLO` register-pair token from a d-access class name.
-
-fn sext(v: u32, bits: u8) -> i64 {
-    let v = v & ((1u32 << bits) - 1);
-    if bits < 32 && v & (1 << (bits - 1)) != 0 {
-        (v as i64) - (1i64 << bits)
-    } else {
-        v as i64
-    }
-}
 
 #[derive(Debug)]
 pub enum CoreError {
