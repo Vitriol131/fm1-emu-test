@@ -97,6 +97,12 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 }
                 let name = params.firmware.lock().unwrap().name.clone();
                 let idle = ui.picking.is_none() && ui.job.is_none();
+                let master_midi = link.shared.midi_master.swap(-1, std::sync::atomic::Ordering::Relaxed);
+                if master_midi >= 0 {
+                    setter.begin_set_parameter(&params.master);
+                    setter.set_parameter(&params.master, master_midi as f32 / 1023.0);
+                    setter.end_set_parameter(&params.master);
+                }
                 let learning = link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed);
                 let learn_label = if learning == -2 { "MIDI Learn: click a control…" }
                     else if learning >= 0 { "MIDI Learn: move a MIDI CC…" }
@@ -183,8 +189,8 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                         link.shared.midi_learn.store(ctl, std::sync::atomic::Ordering::Relaxed);
                     }
                     let mut g = Grab { ctl, last_y: y, acc: 0.0, held: -1 };
-                    if (100..200).contains(&ctl) {
-                        g.held = ctl - 100;
+                    if (100..200).contains(&ctl) || (500..518).contains(&ctl) {
+                        g.held = if ctl >= 500 { 37 + ctl - 500 } else { ctl - 100 };
                         if smk && g.held < NKEY {
                             velocity(&link, panel_smk_hit_y(x, y));
                         }
