@@ -42,3 +42,15 @@ A commit or source edit alone does not mean that a feature has been built or tes
 - Confirmed that the GDB stub crate is explicitly a placeholder and its current source does not use `fm1-core`; removing that unused manifest dependency is consistent with the current implementation.
 
 **Verification:** the core source correction is committed, but a fresh `cargo build` and the core test suite have not yet been run on this commit. The full MIDI Learn implementation remains incomplete.
+
+
+### Fork identity and MIDI Learn editor
+- Changed the host-facing plugin name to **FM-1 MIDI Learn Fork** and vendor to **Vitriol131 Community Fork**.
+- Added a visible **FM-1 MIDI LEARN FORK** banner and an assignment counter to the editor.
+- Added a collapsible MIDI assignments list showing each learned panel slot and its MIDI CC or note source.
+- Made the Learn button explicitly switch between OFF, click-a-control, and waiting-for-CC/note states. The help text explains the sequence.
+- Assigned unique CLAP, AU and VST3 bundle identifiers, AU manufacturer/subtype codes, and bundle filenames so this fork can coexist with upstream instead of replacing it.
+- Updated macOS and Windows build/install scripts for the fork's distinct bundle names.
+- Expanded the root and plugin READMEs with the upstream comparison, intended control coverage, Ableton Live 12 setup, MIDI Learn workflow, risk disclosure and a test checklist.
+
+**Verification:** changes committed to `midi-learn`. The previous build's AU validation does not apply to these new commits. A fresh build, AU/VST3 validation, and hands-on MIDI controller tests in Ableton Live 12 are still required. MIDI Learn remains experimental until those tests pass.
