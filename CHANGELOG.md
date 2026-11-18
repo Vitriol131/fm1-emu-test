@@ -14,7 +14,7 @@ A commit or source edit alone does not mean that a feature has been built or tes
 
 ### Documentation
 - Identified this repository as an unofficial, experimental fork.
-- Documented the fork's goal: experimental MIDI Learn and contextual MIDI mapping for the FM-1 plugin, with the intended controller targets SELECT, PRESETS, ALGORITHM and KNOB1–KNOB4.
+- Documented the complete intended scope of the fork's MIDI Learn: every mouse-operable FM-1 and SMK-37 panel control (encoders, Master/volume, buttons and selectors, pads, faders and pitch/mod wheels), excluding only the SMK-37's 37 musical keys. This is a target specification, not a claim of implementation.
 - Added an AI-assisted / vibe-coded development disclosure and an at-your-own-risk, no-warranty notice.
 - Added this fork-specific changelog.
 
@@ -27,7 +27,9 @@ A commit or source edit alone does not mean that a feature has been built or tes
 **Verification:** source edits have been committed, but the latest state has not yet been recompiled and tested as a whole.
 
 ### MIDI Learn
-- Work in progress. The branch is intended for development of MIDI Learn and contextual mapping in the FM-1 plugin.
+- The intended scope is all mouse-operable panel controls on both supported boards: FM-1's seven encoders, Master pot, buttons and selectors; SMK-37's eight encoders, 16 pads, four faders, pitch/mod wheels, buttons and selectors.
+- The SMK-37's 37 white and black musical keys are explicitly out of scope.
+- Source audit on this date found the existing MIDI Learn implementation still limited to CC-to-encoder mapping for the seven FM-1 encoders. Mouse handling exists for the additional controls, but MIDI routing to those controls has not yet been implemented.
 - No claim of complete implementation or reliable operation is made at this stage.
 
 ### Follow-up source review
