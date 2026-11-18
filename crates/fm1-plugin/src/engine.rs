@@ -459,6 +459,25 @@ mod portable_tests {
         Machine { cpu: Cpu::new(0x02000120), cpu1: None, soc, pending_tick: false, halted: false, flash0 }
     }
     #[test]
+    fn midi_slots_cover_all_supported_controls_and_exclude_smk_keys() {
+        assert_eq!(midi_slot(0), Some(0));
+        assert_eq!(midi_slot(7), Some(7));
+        assert_eq!(midi_slot(100), Some(8));
+        assert_eq!(midi_slot(140), Some(48));
+        assert_eq!(midi_slot(20), Some(49));
+        assert_eq!(midi_slot(27), Some(56));
+        assert_eq!(midi_slot(200), Some(57));
+        assert_eq!(midi_slot(215), Some(72));
+        assert_eq!(midi_slot(300), Some(73));
+        assert_eq!(midi_slot(303), Some(76));
+        assert_eq!(midi_slot(400), Some(77));
+        assert_eq!(midi_slot(401), Some(78));
+        assert_eq!(midi_slot(500), Some(79));
+        assert_eq!(midi_slot(517), Some(96));
+        assert_eq!(midi_slot(600), None);
+        assert_eq!(midi_slot(636), None);
+    }
+    #[test]
     fn restored_sectors_update_the_entire_xip_sector() {
         let mut m = machine();
         let mut sector = vec![0xff; 4096]; sector[0] = 0x12;
