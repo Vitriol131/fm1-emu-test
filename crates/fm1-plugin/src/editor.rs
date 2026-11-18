@@ -185,7 +185,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 if let Some(p) = pos {
                     let (x, y) = at(p);
                     let ctl = hit(smk, x, y);
-                    if ctl != -1 && link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed) == -2 {
+                    if crate::engine::midi_slot(ctl).is_some() && link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed) == -2 {
                         link.shared.midi_learn.store(ctl, std::sync::atomic::Ordering::Relaxed);
                     }
                     let mut g = Grab { ctl, last_y: y, acc: 0.0, held: -1 };
@@ -460,7 +460,7 @@ fn hit(smk: bool, x: f32, y: f32) -> i32 {
         return match panel_smk::hit(x, y) {
             Some(panel_smk::Ctl::Enc(i)) => 20 + i as i32,
             Some(panel_smk::Ctl::Btn(id)) => 500 + (id as i32 - 37),
-            Some(panel_smk::Ctl::Key(_, _)) => -1,
+            Some(panel_smk::Ctl::Key(id, _)) => 600 + id as i32,
             Some(panel_smk::Ctl::Pad(p)) => 200 + p as i32,
             Some(panel_smk::Ctl::Fader(f)) => 300 + f as i32,
             Some(panel_smk::Ctl::Pitch) => 400,
