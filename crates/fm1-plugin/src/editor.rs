@@ -206,11 +206,12 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
             if let (Some(g), Some(p)) = (ui.grab.as_mut(), pos) {
                 let (x, y) = at(p);
                 let keys = if smk { 0..NKEY } else { 14..41 };
-                if (100..200).contains(&g.ctl) && keys.contains(&g.held) {
+                if ((100..200).contains(&g.ctl) || (600..637).contains(&g.ctl)) && keys.contains(&g.held) {
                     let h = hit(smk, x, y);
-                    if keys.contains(&(h - 100)) && h - 100 != g.held {
+                    let key_code = if smk { h - 600 } else { h - 100 };
+                    if keys.contains(&key_code) && key_code != g.held {
                         let old = g.held;
-                        g.held = h - 100;
+                        g.held = key_code;
                         let new = g.held;
                         key(ui, &link, old, false);
                         if smk {
