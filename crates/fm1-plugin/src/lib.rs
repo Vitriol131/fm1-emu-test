@@ -360,37 +360,73 @@ impl Plugin for Fm1 {
             if len == 0 {
                 continue;
             }
-            // MIDI Learn and CC-to-encoder translation (FM-1's seven front-panel encoders).
+            // MIDI Learn: bind a CC to the panel control selected with the mouse.
+            // Mapped CCs are consumed here, before the ordinary firmware MIDI input path.
             if b[0] & 0xf0 == 0xb0 {
                 if let Some(link) = self.link.as_ref() {
+                    use std::sync::atomic::Ordering;
                     let cc = b[1] as i32;
-                    let target = link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed);
-                    if (0..7).contains(&target) {
-                        link.shared.midi_map[target as usize].store(cc, std::sync::atomic::Ordering::Relaxed);
-                        link.shared.midi_last[target as usize].store(b[2] as i32, std::sync::atomic::Ordering::Relaxed);
-                        link.shared.midi_accum[target as usize].store(0, std::sync::atomic::Ordering::Relaxed);
-                        link.shared.midi_learn.store(-1, std::sync::atomic::Ordering::Relaxed);
-                        continue;
+                    let target = link.shared.midi_learn.load(Ordering::Relaxed);
+                    if target != -1 && target != -2 {
+                        if let Some(slot) = engine::midi_slot(target) {
+                            link.shared.midi_map[slot].store(cc, Ordering::Relaxed);
+                            link.shared.midi_last[slot].store(b[2] as i32, Ordering::Relaxed);
+                            link.shared.midi_accum[slot].store(0, Ordering::Relaxed);
+                            link.shared.midi_learn.store(-1, Ordering::Relaxed);
+                            continue;
+                        }
                     }
-                    let mut consumed = false;
-                    for i in 0..7 {
-                        if link.shared.midi_map[i].load(std::sync::atomic::Ordering::Relaxed) == cc {
-                            let value = b[2] as i32;
-                            let last = link.shared.midi_last[i].swap(value, std::sync::atomic::Ordering::Relaxed);
-                            if last >= 0 {
-                                let accum = link.shared.midi_accum[i].fetch_add(value - last, std::sync::atomic::Ordering::Relaxed) + value - last;
+                    for slot in 0..link.shared.midi_map.len() {
+                        if link.shared.midi_map[slot].load(Ordering::Relaxed) != cc {
+                            continue;
+                        }
+                        let value = b[2] as i32;
+                        let previous = link.shared.midi_last[slot].swap(value, Ordering::Relaxed);
+                        let code = match slot {
+                            0..=7 => slot as i32,
+                            8..=48 => 100 + (slot - 8) as i32,
+                            49..=56 => 20 + (slot - 49) as i32,
+                            57..=72 => 200 + (slot - 57) as i32,
+                            73..=76 => 300 + (slot - 73) as i32,
+                            77..=78 => 400 + (slot - 77) as i32,
+                            79..=96 => 500 + (slot - 79) as i32,
+                            _ => continue,
+                        };
+                        if (0..7).contains(&code) || (20..28).contains(&code) {
+                            if previous >= 0 {
+                                let delta = value - previous;
+                                let accum = link.shared.midi_accum[slot].fetch_add(delta, Ordering::Relaxed) + delta;
                                 let clicks = accum / 2;
                                 if clicks != 0 {
-                                    link.shared.midi_accum[i].fetch_sub(clicks * 2, std::sync::atomic::Ordering::Relaxed);
-                                    let enc = if i == 1 { 6 } else if i >= 2 { (i - 1) as u8 } else { i as u8 };
+                                    link.shared.midi_accum[slot].fetch_sub(clicks * 2, Ordering::Relaxed);
+                                    let enc = if (20..28).contains(&code) { (code - 20) as u8 }
+                                        else if code == 1 { 6 }
+                                        else if code >= 2 { (code - 1) as u8 }
+                                        else { code as u8 };
                                     let _ = link.cmds.send(engine::Cmd::Enc { enc, clicks });
                                 }
                             }
-                            consumed = true;
-                            break;
+                        } else if code == 7 {
+                            link.shared.midi_master.store(value * 1023 / 127, Ordering::Relaxed);
+                        } else if (100..141).contains(&code) || (500..518).contains(&code) {
+                            let id = if code >= 500 { 37 + code - 500 } else { code - 100 } as u8;
+                            let _ = link.cmds.send(engine::Cmd::Key { id, down: value >= 64 });
+                        } else if (200..216).contains(&code) {
+                            let _ = link.cmds.send(engine::Cmd::Analog { idx: (code - 200) as u8, value: (value * 1023 / 127) as u16 });
+                        } else if (300..304).contains(&code) {
+                            let _ = link.cmds.send(engine::Cmd::Analog { idx: (16 + code - 300) as u8, value: (value * 1023 / 127) as u16 });
+                        } else if code == 400 {
+                            let v = 640 - value * (640 - 445) / 127;
+                            let _ = link.cmds.send(engine::Cmd::Analog { idx: fm1_soc::smk::ANALOG_PITCH, value: v as u16 });
+                        } else if code == 401 {
+                            let v = 474 + value * (629 - 474) / 127;
+                            let _ = link.cmds.send(engine::Cmd::Analog { idx: fm1_soc::smk::ANALOG_MOD, value: v as u16 });
                         }
                     }
-                    if consumed { continue; }
+                    // A CC used by any mapping must not also reach the firmware MIDI jack.
+                    if (0..link.shared.midi_map.len()).any(|i| link.shared.midi_map[i].load(Ordering::Relaxed) == cc) {
+                        continue;
+                    }
                 }
             }
             if ch != 0 {
