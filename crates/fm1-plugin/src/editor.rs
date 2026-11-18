@@ -87,6 +87,8 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
 
         egui::TopBottomPanel::top("bar").show(ctx, |bar| {
             bar.horizontal_wrapped(|bar| {
+                bar.label(egui::RichText::new("FM-1 MIDI LEARN FORK").strong().color(egui::Color32::from_rgb(0x65, 0xc8, 0xff)));
+                bar.separator();
                 if ui.msg_until.is_some_and(|until| std::time::Instant::now() >= until) {
                     ui.msg.clear(); ui.msg_until = None;
                 }
@@ -114,11 +116,14 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 }
                 let learning = link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed);
                 let learn_label = if learning == -2 { "MIDI Learn: click a control…" }
-                    else if learning >= 0 { "MIDI Learn: move a MIDI CC…" }
-                    else { "MIDI Learn" };
-                if bar.button(learn_label).clicked() {
-                    link.shared.midi_learn.store(-2, std::sync::atomic::Ordering::Relaxed);
+                    else if learning >= 0 { "MIDI Learn: move a MIDI CC/note…" }
+                    else { "MIDI Learn: OFF" };
+                if bar.button(learn_label).on_hover_text("Enable learning, click a panel control, then move a MIDI CC or press a MIDI note on your controller. Learned controls are saved with the DAW project.").clicked() {
+                    let next = if learning == -1 { -2 } else { -1 };
+                    link.shared.midi_learn.store(next, std::sync::atomic::Ordering::Relaxed);
                 }
+                let assigned = link.shared.midi_map.iter().filter(|slot| slot.load(std::sync::atomic::Ordering::Relaxed) >= 0).count();
+                bar.label(format!("MIDI mapped: {assigned}/97"));
                 if bar.add_enabled(idle, egui::Button::new("Load firmware / save…"))
                     .on_hover_text("Open a .fwsc firmware package or a shared .fm1save setup").clicked() {
                     ui.picking = Some((FileAction::Load, pick(FileAction::Load, &name)));
