@@ -59,7 +59,7 @@ endif ()
 add_library(fm1_vst3 MODULE)
 target_add_vst3_wrapper(
         TARGET fm1_vst3
-        OUTPUT_NAME "FM-1"
+        OUTPUT_NAME "FM-1-MIDI-Learn-Fork"
         BUNDLE_IDENTIFIER "io.github.vitriol131.fm1-midi-learn-fork.vst3"
         BUNDLE_VERSION "${PROJECT_VERSION}"
         WINDOWS_FOLDER_VST3 TRUE
