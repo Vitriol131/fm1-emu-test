@@ -4527,6 +4527,16 @@ fn raw_v(insn: &Instruction) -> u64 {
     insn.raw
 }
 
+/// Sign-extend the low `bits` of a value.
+fn sext(v: u32, bits: u8) -> i64 {
+    let v = v & ((1u32 << bits) - 1);
+    if bits < 32 && v & (1 << (bits - 1)) != 0 {
+        (v as i64) - (1i64 << bits)
+    } else {
+        v as i64
+    }
+}
+
 
 #[derive(Debug)]
 pub enum CoreError {
