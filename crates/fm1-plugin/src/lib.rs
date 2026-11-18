@@ -361,7 +361,7 @@ impl Plugin for Fm1 {
                 continue;
             }
             // MIDI Learn and CC-to-encoder translation (FM-1's seven front-panel encoders).
-            if b[0] & 0xf0 == 0xb0 && b[2] > 0 {
+            if b[0] & 0xf0 == 0xb0 {
                 if let Some(link) = self.link.as_ref() {
                     let cc = b[1] as i32;
                     let target = link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed);
