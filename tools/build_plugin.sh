@@ -40,9 +40,9 @@ cat > "$clap/Contents/Info.plist" <<EOF
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleExecutable</key><string>FM-1 MIDI Learn Fork</string>
+  <key>CFBundleExecutable</key><string>FM-1</string>
   <key>CFBundleIdentifier</key><string>io.github.vitriol131.fm1-midi-learn-fork.clap</string>
-  <key>CFBundleName</key><string>FM-1</string>
+  <key>CFBundleName</key><string>FM-1 MIDI Learn Fork</string>
   <key>CFBundlePackageType</key><string>BNDL</string>
   <key>CFBundleShortVersionString</key><string>$version</string>
   <key>CFBundleVersion</key><string>$version</string>
@@ -56,31 +56,31 @@ cmake -S crates/fm1-plugin/wrap -B "$out/build" -G Ninja -DCMAKE_BUILD_TYPE=Rele
   -DCMAKE_OSX_ARCHITECTURES="$(lipo -archs "$clap/Contents/MacOS/FM-1" | tr ' ' ';')" >/dev/null
 cmake --build "$out/build"
 au=$(find "$out/build" -maxdepth 2 -name "FM-1-MIDI-Learn-Fork.component" -type d | head -1)
-rm -rf "$out/FM-1.component"
-cp -R "$au" "$out/FM-1.component"
+rm -rf "$out/FM-1-MIDI-Learn-Fork.component"
+cp -R "$au" "$out/FM-1-MIDI-Learn-Fork.component"
 # the Info.plist that names the AU to hosts (clap-wrapper's copy of it runs before the bundle's
 # default one is written, under Ninja)
-cp "$out/build/fm1_auv2-build-helper-output/auv2_Info.plist" "$out/FM-1.component/Contents/Info.plist"
-rm -rf "$out/FM-1.component/Contents/PlugIns"
-mkdir -p "$out/FM-1.component/Contents/PlugIns"
-cp -R "$clap" "$out/FM-1.component/Contents/PlugIns/"
-sign "$out/FM-1.component"
+cp "$out/build/fm1_auv2-build-helper-output/auv2_Info.plist" "$out/FM-1-MIDI-Learn-Fork.component/Contents/Info.plist"
+rm -rf "$out/FM-1-MIDI-Learn-Fork.component/Contents/PlugIns"
+mkdir -p "$out/FM-1-MIDI-Learn-Fork.component/Contents/PlugIns"
+cp -R "$clap" "$out/FM-1-MIDI-Learn-Fork.component/Contents/PlugIns/"
+sign "$out/FM-1-MIDI-Learn-Fork.component"
 vst3=$(find "$out/build" -maxdepth 2 -name "FM-1-MIDI-Learn-Fork.vst3" -type d | head -1)
-rm -rf "$out/FM-1.vst3"
-cp -R "$vst3" "$out/FM-1.vst3"
-rm -rf "$out/FM-1.vst3/Contents/PlugIns"
-mkdir -p "$out/FM-1.vst3/Contents/PlugIns"
-cp -R "$clap" "$out/FM-1.vst3/Contents/PlugIns/"
-sign "$out/FM-1.vst3"
-echo "built $clap, $out/FM-1.component and $out/FM-1.vst3"
+rm -rf "$out/FM-1-MIDI-Learn-Fork.vst3"
+cp -R "$vst3" "$out/FM-1-MIDI-Learn-Fork.vst3"
+rm -rf "$out/FM-1-MIDI-Learn-Fork.vst3/Contents/PlugIns"
+mkdir -p "$out/FM-1-MIDI-Learn-Fork.vst3/Contents/PlugIns"
+cp -R "$clap" "$out/FM-1-MIDI-Learn-Fork.vst3/Contents/PlugIns/"
+sign "$out/FM-1-MIDI-Learn-Fork.vst3"
+echo "built $clap, $out/FM-1-MIDI-Learn-Fork.component and $out/FM-1-MIDI-Learn-Fork.vst3"
 
 [ -n "${NO_INSTALL:-}" ] && exit 0
 dst=~/Library/Audio/Plug-Ins
 mkdir -p "$dst/CLAP" "$dst/Components" "$dst/VST3"
-rm -rf "$dst/CLAP/FM-1.clap" "$dst/Components/FM-1.component" "$dst/VST3/FM-1.vst3"
+rm -rf "$dst/CLAP/FM-1-MIDI-Learn-Fork.clap" "$dst/Components/FM-1-MIDI-Learn-Fork.component" "$dst/VST3/FM-1-MIDI-Learn-Fork.vst3"
 cp -R "$clap" "$dst/CLAP/"
-cp -R "$out/FM-1.component" "$dst/Components/"
-cp -R "$out/FM-1.vst3" "$dst/VST3/"
+cp -R "$out/FM-1-MIDI-Learn-Fork.component" "$dst/Components/"
+cp -R "$out/FM-1-MIDI-Learn-Fork.vst3" "$dst/VST3/"
 # (the AU host caches components: a new build is seen once it is told to look again)
 killall -9 AudioComponentRegistrar 2>/dev/null || true
 echo "installed in $dst"
