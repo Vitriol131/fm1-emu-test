@@ -405,6 +405,7 @@ impl Plugin for Fm1 {
                             _ => continue,
                         };
                         if (0..7).contains(&code) || (20..28).contains(&code) {
+                            if source >= 128 && raw_value == 0 { continue; }
                             if previous >= 0 {
                                 let delta = value - previous;
                                 let accum = link.shared.midi_accum[slot].fetch_add(delta, Ordering::Relaxed) + delta;
@@ -421,8 +422,12 @@ impl Plugin for Fm1 {
                         } else if code == 7 {
                             link.shared.midi_master.store(value * 1023 / 127, Ordering::Relaxed);
                         } else if (100..141).contains(&code) || (500..518).contains(&code) {
-                            let id = (if code >= 500 { 37 + code - 500 } else { code - 100 }) as u8;
-                            let _ = link.cmds.send(engine::Cmd::Key { id, down: value >= 64 });
+                            let was_down = previous >= 64;
+                            let is_down = value >= 64;
+                            if was_down != is_down {
+                                let id = (if code >= 500 { 37 + code - 500 } else { code - 100 }) as u8;
+                                let _ = link.cmds.send(engine::Cmd::Key { id, down: is_down });
+                            }
                         } else if (200..216).contains(&code) {
                             let _ = link.cmds.send(engine::Cmd::Analog { idx: (code - 200) as u8, value: (value * 1023 / 127) as u16 });
                         } else if (300..304).contains(&code) {
