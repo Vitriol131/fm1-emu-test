@@ -259,6 +259,7 @@ impl Fm1 {
             midi_map: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(-1)),
             midi_last: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(-1)),
             midi_accum: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(0)),
+            midi_master: std::sync::atomic::AtomicI32::new(-1),
             quit: Default::default(),
         });
         let (tx, rx) = mpsc::channel();
@@ -409,7 +410,7 @@ impl Plugin for Fm1 {
                         } else if code == 7 {
                             link.shared.midi_master.store(value * 1023 / 127, Ordering::Relaxed);
                         } else if (100..141).contains(&code) || (500..518).contains(&code) {
-                            let id = if code >= 500 { 37 + code - 500 } else { code - 100 } as u8;
+                            let id = (if code >= 500 { 37 + code - 500 } else { code - 100 }) as u8;
                             let _ = link.cmds.send(engine::Cmd::Key { id, down: value >= 64 });
                         } else if (200..216).contains(&code) {
                             let _ = link.cmds.send(engine::Cmd::Analog { idx: (code - 200) as u8, value: (value * 1023 / 127) as u16 });
