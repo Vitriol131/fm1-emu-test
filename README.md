@@ -1,3 +1,60 @@
+# FM-1 MIDI Learn Fork (unofficial)
+
+This repository is an **unofficial fork** of [joakimeriksson/fm1-emu](https://github.com/joakimeriksson/fm1-emu), maintained under the GitHub account [Vitriol131](https://github.com/Vitriol131). It is an experimental, AI-assisted / “vibe-coded” project. It is provided as-is, without warranty or guarantee of fitness; use it at your own risk. The fork maintainer accepts no responsibility for data loss, unexpected behavior, hardware damage, or problems in a DAW session. The original project and its authors are not responsible for this fork.
+
+## What differs from upstream
+
+The fork's specific goal is to make the emulated FM-1 / SMK-37 front-panel controls MIDI-learnable from a hardware controller, so a MIDI message can operate the same control as a mouse interaction.
+
+- Distinct plugin identity: **FM-1 MIDI Learn Fork**, vendor **Vitriol131 Community Fork**, with separate AU/VST3/CLAP bundle identifiers and filenames. It can be installed alongside the upstream plugin without overwriting its bundles.
+- A visible **FM-1 MIDI LEARN FORK** banner in the editor.
+- MIDI Learn workflow: enable MIDI Learn, click a control on the emulated panel, then move a MIDI CC control or press a MIDI note on the controller.
+- Intended control coverage: FM-1 encoders and Master; FM-1 panel buttons/selectors; SMK-37 encoders, pads, faders, pitch/mod wheels and panel buttons/selectors. The SMK-37's 37 musical keys are excluded from MIDI Learn and remain available for normal playing.
+- Learned events are intended to be consumed by the mapping layer rather than also passed through to the emulated firmware.
+- Learned mappings are stored in plugin project state. Master remains a host parameter intended for automation.
+
+**Verification status:** the source changes below are committed, but the MIDI Learn behavior has not yet been validated with a physical controller in Ableton Live. The previous successful AU validation only established that the Audio Unit bundle passed Apple's validator; it did not test MIDI Learn. Treat this feature as experimental until the test checklist below has been completed.
+
+## Using MIDI Learn
+
+1. Insert **FM-1 MIDI Learn Fork** as a VST3 instrument on a MIDI track in Ableton Live 12.
+2. Load a firmware package using **Load firmware / save…**.
+3. Connect the MIDI controller and make sure Live routes its MIDI input to the track hosting the plugin (monitoring set to **In** or record-arm the track).
+4. In the plugin window, click **MIDI Learn: OFF**. It changes to a prompt asking you to click a panel control.
+5. Click the on-screen encoder, button, pad, fader, wheel or Master control you want to assign.
+6. Move the desired controller knob/fader, or press the desired controller button/pad. The plugin should leave learn mode when it receives the MIDI message.
+7. Repeat for each control: enable MIDI Learn again, click another panel control, then move/press the next hardware control.
+8. Save the Ableton Live set. Assignments are stored with plugin project state.
+
+The Learn button and the host's **MIDI Map** mode in Ableton are different features. This fork learns MIDI inside the plugin; it does not automatically select or highlight a control in Ableton's MIDI Map screen.
+
+If no assignment is learned, check that the track is receiving the controller's MIDI input and that the controller sends MIDI CC or MIDI notes. The current implementation accepts CC and note-on/note-off sources; other message types are not learn sources.
+
+## Build and install (macOS)
+
+The build script creates separately named bundles:
+- `FM-1-MIDI-Learn-Fork.clap`
+- `FM-1-MIDI-Learn-Fork.component`
+- `FM-1-MIDI-Learn-Fork.vst3`
+
+They install to `~/Library/Audio/Plug-Ins/CLAP`, `Components`, and `VST3`, respectively. The script is a build script and recompiles the plugin; use it only after source changes. To build without installing, set `NO_INSTALL=1`.
+
+After installing, quit and reopen Ableton Live 12, enable the system VST3 plug-in folder in Preferences if needed, and rescan. Search for **FM-1 MIDI Learn Fork** under Plug-ins → VST3.
+
+## Test checklist
+
+- [ ] Ableton Live 12 lists the fork separately from upstream.
+- [ ] Plugin window displays the fork banner.
+- [ ] MIDI track input reaches the plugin.
+- [ ] CC learning and note learning both work.
+- [ ] Encoder directions and increments match mouse operation.
+- [ ] Buttons and selectors respond to both press and release.
+- [ ] SMK-37 pads, faders, pitch and mod wheels respond correctly.
+- [ ] SMK-37's 37 musical keys remain excluded from MIDI Learn.
+- [ ] Mapped messages do not also trigger conflicting firmware MIDI input.
+- [ ] Master responds and remains host-automatable.
+- [ ] Assignments survive saving and reopening an Ableton project.
+
 # FM-1 emulator
 
 > **Unofficial experimental fork — vibecoded**
