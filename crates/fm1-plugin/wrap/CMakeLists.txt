@@ -44,12 +44,12 @@ if (APPLE)
     add_library(fm1_auv2 MODULE)
     target_add_auv2_wrapper(
             TARGET fm1_auv2
-            OUTPUT_NAME "FM-1"
-            BUNDLE_IDENTIFIER "io.github.joakimeriksson.fm1-emu.auv2"
+            OUTPUT_NAME "FM-1-MIDI-Learn-Fork"
+            BUNDLE_IDENTIFIER "io.github.vitriol131.fm1-midi-learn-fork.auv2"
             BUNDLE_VERSION "${PROJECT_VERSION}"
-            MANUFACTURER_NAME "fm1-emu"
-            MANUFACTURER_CODE "Fm1e"
-            SUBTYPE_CODE "Fm1s"
+            MANUFACTURER_NAME "Vitriol131 MIDI Fork"
+            MANUFACTURER_CODE "V131"
+            SUBTYPE_CODE "M1LF"
             INSTRUMENT_TYPE "aumu"
             MACOS_EMBEDDED_CLAP_LOCATION "${FM1_CLAP}")
 endif ()
@@ -60,7 +60,7 @@ add_library(fm1_vst3 MODULE)
 target_add_vst3_wrapper(
         TARGET fm1_vst3
         OUTPUT_NAME "FM-1"
-        BUNDLE_IDENTIFIER "io.github.joakimeriksson.fm1-emu.vst3"
+        BUNDLE_IDENTIFIER "io.github.vitriol131.fm1-midi-learn-fork.vst3"
         BUNDLE_VERSION "${PROJECT_VERSION}"
         WINDOWS_FOLDER_VST3 TRUE
         MACOS_EMBEDDED_CLAP_LOCATION "${FM1_CLAP}")
