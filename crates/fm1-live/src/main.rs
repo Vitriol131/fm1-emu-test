@@ -1965,7 +1965,7 @@ fn window_smk(o: &Opts, tx: &mpsc::Sender<Action>, lcd: &Mutex<Vec<u16>>, leds: 
     let mut analog = [0u16; 23];
     analog[ANALOG_PITCH as usize] = PITCH_REST;
     analog[ANALOG_MOD as usize] = MOD_REST;
-    let mut set_analog = |analog: &mut [u16; 23], i: usize, v: u16| {
+    let set_analog = |analog: &mut [u16; 23], i: usize, v: u16| {
         if analog[i] != v {
             analog[i] = v;
             let _ = tx.send(Action::Adc { ch: i as u8, value: v });
