@@ -10,12 +10,16 @@
 > hardware issues, or other consequences arising from its use. Back up your files and projects before
 > testing. No warranty is provided.
 >
-> **Purpose of this fork:** to experiment with improvements to the FM-1 emulator plugin, especially
-> MIDI Learn and contextual MIDI mapping, so that external MIDI controllers (including encoder-based
-> controllers) can control the emulator's on-screen controls. The intended mapping covers the
-> SELECT, PRESETS, ALGORITHM and KNOB1–KNOB4 controls, with behavior that can adapt to the active
-> firmware page or context. This is a development goal, not a claim that every part is already
-> implemented or fully tested.
+> **Purpose of this fork:** to develop full MIDI control of the FM-1 emulator plugin.
+> The goal is for an external MIDI controller to operate **every control that can be operated with
+> the mouse in the plugin's current panel**, not just a selected set of knobs. This includes all
+> buttons and switches, selectors, encoders/knobs, keys or pads where present, sliders/faders,
+> wheels, and every level/volume control exposed by the interface (including Master/volume).
+> MIDI Learn should let the user assign a physical MIDI control to each applicable on-screen
+> control, and the mapping must follow the active firmware, page and panel context. Continuous
+> controls (such as knobs, faders and volume) and discrete actions (such as buttons and selectors)
+> must behave consistently with their mouse-operated counterparts. This is the target specification;
+> it is not a claim that the complete implementation already exists or has been tested.
 >
 > **Version history:** see [CHANGELOG.md](CHANGELOG.md). Entries describe changes made in this fork;
 > they do not imply that a feature has passed testing unless that is explicitly stated.
