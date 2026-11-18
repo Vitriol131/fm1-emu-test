@@ -6,7 +6,7 @@
 > It is not an official M-VAVE / M-WAVE project and is not affiliated with or endorsed by the original
 > emulator author or the hardware manufacturer. Changes in this fork are developed with AI-assisted
 > "vibe coding" and are experimental. They may contain bugs, regressions, or incomplete features.
-> Use at your own risk. The maintainers of this fork accept no responsibility for damage, data loss,
+> Use at your own risk. The fork maintainer accepts no responsibility for damage, data loss,
 > hardware issues, or other consequences arising from its use. Back up your files and projects before
 > testing. No warranty is provided.
 >
