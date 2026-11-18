@@ -480,7 +480,7 @@ fn main() -> ExitCode {
     let extra_breaks: Vec<u32> = std::env::var("FM1_BREAK_PCS").ok()
         .map(|v| v.split(',').filter_map(|x| u32::from_str_radix(x.trim().trim_start_matches("0x"), 16).ok()).collect())
         .unwrap_or_default();
-    let mut last_pc = cpus[0].pc;
+    let mut last_pc;
     let mut total_steps: u64 = 0;
     let mut ring: Vec<u32> = Vec::new();
     // last executed instructions (pc, class, sp) for the halt report
