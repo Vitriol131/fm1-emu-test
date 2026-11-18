@@ -369,8 +369,9 @@ impl Plugin for Fm1 {
             // MIDI Learn accepts CCs and note-style controls (note-on/off), common on pads
             // and button controllers. Mapped events are consumed before firmware MIDI passthrough.
             let status = b[0] & 0xf0;
-            let source = if status == 0xb0 { Some(b[1] as i32) }
-                else if status == 0x90 || status == 0x80 { Some(128 + b[1] as i32) }
+            let midi_channel = (b[0] & 0x0f) as i32;
+            let source = if status == 0xb0 { Some(midi_channel * 256 + b[1] as i32) }
+                else if status == 0x90 || status == 0x80 { Some(midi_channel * 256 + 128 + b[1] as i32) }
                 else { None };
             if let Some(source) = source {
                 if let Some(link) = self.link.as_ref() {
