@@ -361,27 +361,33 @@ impl Plugin for Fm1 {
             if len == 0 {
                 continue;
             }
-            // MIDI Learn: bind a CC to the panel control selected with the mouse.
-            // Mapped CCs are consumed here, before the ordinary firmware MIDI input path.
-            if b[0] & 0xf0 == 0xb0 {
+            // MIDI Learn accepts CCs and note-style controls (note-on/off), common on pads
+            // and button controllers. Mapped events are consumed before firmware MIDI passthrough.
+            let status = b[0] & 0xf0;
+            let source = if status == 0xb0 { Some(b[1] as i32) }
+                else if status == 0x90 || status == 0x80 { Some(128 + b[1] as i32) }
+                else { None };
+            if let Some(source) = source {
                 if let Some(link) = self.link.as_ref() {
                     use std::sync::atomic::Ordering;
-                    let cc = b[1] as i32;
+                    let raw_value = if status == 0x80 || status == 0x90 && b[2] == 0 { 0 } else { b[2] as i32 };
                     let target = link.shared.midi_learn.load(Ordering::Relaxed);
                     if target != -1 && target != -2 {
                         if let Some(slot) = engine::midi_slot(target) {
-                            link.shared.midi_map[slot].store(cc, Ordering::Relaxed);
-                            link.shared.midi_last[slot].store(b[2] as i32, Ordering::Relaxed);
+                            link.shared.midi_map[slot].store(source, Ordering::Relaxed);
+                            link.shared.midi_last[slot].store(raw_value, Ordering::Relaxed);
                             link.shared.midi_accum[slot].store(0, Ordering::Relaxed);
                             link.shared.midi_learn.store(-1, Ordering::Relaxed);
                             continue;
                         }
                     }
+                    let mut matched = false;
                     for slot in 0..link.shared.midi_map.len() {
-                        if link.shared.midi_map[slot].load(Ordering::Relaxed) != cc {
+                        if link.shared.midi_map[slot].load(Ordering::Relaxed) != source {
                             continue;
                         }
-                        let value = b[2] as i32;
+                        matched = true;
+                        let value = if source >= 128 { raw_value * 127 / 127 } else { raw_value };
                         let previous = link.shared.midi_last[slot].swap(value, Ordering::Relaxed);
                         let code = match slot {
                             0..=7 => slot as i32,
@@ -424,10 +430,7 @@ impl Plugin for Fm1 {
                             let _ = link.cmds.send(engine::Cmd::Analog { idx: fm1_soc::smk::ANALOG_MOD, value: v as u16 });
                         }
                     }
-                    // A CC used by any mapping must not also reach the firmware MIDI jack.
-                    if (0..link.shared.midi_map.len()).any(|i| link.shared.midi_map[i].load(Ordering::Relaxed) == cc) {
-                        continue;
-                    }
+                    if matched { continue; }
                 }
             }
             if ch != 0 {
