@@ -406,7 +406,7 @@ impl Plugin for Fm1 {
                             _ => continue,
                         };
                         if (0..7).contains(&code) || (20..28).contains(&code) {
-                            if source >= 128 && raw_value == 0 { continue; }
+                            if source % 256 >= 128 && raw_value == 0 { continue; }
                             if previous >= 0 {
                                 let delta = value - previous;
                                 let accum = link.shared.midi_accum[slot].fetch_add(delta, Ordering::Relaxed) + delta;
