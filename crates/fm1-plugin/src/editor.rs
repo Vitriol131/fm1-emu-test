@@ -191,8 +191,8 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 .default_open(false)
                 .show(c, |list| {
                     egui::Grid::new("midi_assignment_grid").striped(true).show(list, |grid| {
-                        grid.strong("Panel control");
-                        grid.strong("MIDI source");
+                        grid.label(egui::RichText::new("Panel control").strong());
+                        grid.label(egui::RichText::new("MIDI source").strong());
                         grid.end_row();
                         for (slot, source) in link.shared.midi_map.iter().enumerate() {
                             let source = source.load(std::sync::atomic::Ordering::Relaxed);
