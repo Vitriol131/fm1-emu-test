@@ -653,8 +653,7 @@ impl Cpu {
         macro_rules! sync {
             () => {{
                 self.pc = pc;
-                let previous = std::mem::replace(&mut synced, n);
-                self.insn_count += (n - previous) as u64;
+                self.insn_count += (n - synced) as u64;
             }};
         }
         // a runner's stretch (see `stop_pc`): `bound` is where the runner's call in progress
