@@ -86,7 +86,6 @@ pub const THEMES: &[(&str, &str, Theme)] = &[
     }),
 ];
 
-#[cfg(test)]
 impl Theme {
     pub fn try_by_name(name: &str) -> Option<&'static Theme> {
         THEMES.iter().find(|(n, _, _)| *n == name).map(|(_, _, t)| t)
@@ -153,6 +152,13 @@ pub fn keys() -> Vec<(u8, usize, usize, usize, usize, bool)> {
         v.push((14 + n, cx - kw / 2, 574, kw, 94, true));
     }
     v
+}
+
+/// The velocity of a click on key `id` at height `y`: 1 at its top, 127 at its bottom.
+pub fn key_vel(id: u8, y: f32) -> u8 {
+    keys().iter().find(|k| k.0 == id).map_or(100, |&(_, _, py, _, h, _)| {
+        (1.0 + 126.0 * ((y - py as f32) / h as f32).clamp(0.0, 1.0)).round() as u8
+    })
 }
 
 pub fn hit(x: f32, y: f32) -> Option<Ctl> {
