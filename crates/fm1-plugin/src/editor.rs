@@ -186,6 +186,24 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
         });
 
         egui::CentralPanel::default().frame(egui::Frame::NONE.fill(egui::Color32::from_rgb(0x18, 0x19, 0x1b))).show(ctx, |c| {
+            let assigned = link.shared.midi_map.iter().filter(|slot| slot.load(std::sync::atomic::Ordering::Relaxed) >= 0).count();
+            egui::CollapsingHeader::new(format!("MIDI assignments ({assigned}/97)"))
+                .default_open(false)
+                .show(c, |list| {
+                    egui::Grid::new("midi_assignment_grid").striped(true).show(list, |grid| {
+                        grid.strong("Panel control");
+                        grid.strong("MIDI source");
+                        grid.end_row();
+                        for (slot, source) in link.shared.midi_map.iter().enumerate() {
+                            let source = source.load(std::sync::atomic::Ordering::Relaxed);
+                            if source < 0 { continue; }
+                            grid.label(midi_control_name(slot));
+                            if source >= 128 { grid.label(format!("Note {}", source - 128)); }
+                            else { grid.label(format!("CC {source}")); }
+                            grid.end_row();
+                        }
+                    });
+                });
             let avail = c.available_rect_before_wrap();
             let k = (avail.width() / w as f32).min(avail.height() / h as f32);
             let rect = egui::Rect::from_center_size(avail.center(), egui::vec2(w as f32 * k, h as f32 * k));
@@ -339,6 +357,21 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
         });
         ctx.request_repaint_after(std::time::Duration::from_millis(33));
     })
+}
+
+fn midi_control_name(slot: usize) -> String {
+    match slot {
+        0..=6 => format!("FM-1 Encoder {}", slot + 1),
+        7 => "FM-1 Master".into(),
+        8..=48 => format!("FM-1 Panel control {}", slot - 8),
+        49..=56 => format!("SMK-37 Encoder {}", slot - 48),
+        57..=72 => format!("SMK-37 Pad {}", slot - 56),
+        73..=76 => format!("SMK-37 Fader {}", slot - 72),
+        77 => "SMK-37 Pitch wheel".into(),
+        78 => "SMK-37 Mod wheel".into(),
+        79..=96 => format!("SMK-37 Panel control {}", slot - 78),
+        _ => format!("Panel control {slot}"),
+    }
 }
 
 /// Ask for a package. The dialog runs modally, so not from inside the window's frame: macOS
