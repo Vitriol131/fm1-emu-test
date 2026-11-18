@@ -68,16 +68,31 @@ pub struct View {
 /// The flash sectors that differ from the package's.
 type Sectors = Vec<(u32, Vec<u8>)>;
 
+/// Stable slot for a panel hit code. Musical SMK keys are deliberately not assigned slots.
+pub fn midi_slot(code: i32) -> Option<usize> {
+    match code {
+        0..=7 => Some(code as usize),                         // FM-1 encoders and Master
+        100..=140 => Some(8 + (code - 100) as usize),        // FM-1 buttons and note-key controls
+        20..=27 => Some(49 + (code - 20) as usize),          // SMK-37 encoders
+        200..=215 => Some(57 + (code - 200) as usize),       // SMK-37 pads
+        300..=303 => Some(73 + (code - 300) as usize),       // SMK-37 faders
+        400..=401 => Some(77 + (code - 400) as usize),       // SMK-37 pitch/mod wheels
+        500..=517 => Some(79 + (code - 500) as usize),       // SMK-37 buttons
+        _ => None,
+    }
+}
+
 pub struct Shared {
     pub view: Mutex<View>,
     pub quit: AtomicBool,
-    /// MIDI Learn: -2 waits for an encoder click, -1 is idle, 0..6 waits for a CC.
+    /// MIDI Learn: -2 waits for a panel-control click; non-negative values are hit codes.
     pub midi_learn: AtomicI32,
-    /// CC number assigned to each of the seven FM-1 panel encoders; -1 means unassigned.
-    pub midi_map: [AtomicI32; 7],
-    /// Last CC value and fractional detent accumulator for each mapped encoder.
-    pub midi_last: [AtomicI32; 7],
-    pub midi_accum: [AtomicI32; 7],
+    /// CC assignment/state slots for every supported mouse-operable panel control.
+    pub midi_map: [AtomicI32; 90],
+    pub midi_last: [AtomicI32; 90],
+    pub midi_accum: [AtomicI32; 90],
+    /// A MIDI-controlled Master value waiting for the editor's ParamSetter.
+    pub midi_master: AtomicI32,
 }
 
 struct Machine {
