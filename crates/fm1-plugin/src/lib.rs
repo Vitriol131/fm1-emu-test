@@ -306,9 +306,9 @@ fn midi_len(status: u8) -> u8 {
 }
 
 impl Plugin for Fm1 {
-    const NAME: &'static str = "FM-1";
-    const VENDOR: &'static str = "fm1-emu";
-    const URL: &'static str = "https://github.com/joakimeriksson/fm1-emu";
+    const NAME: &'static str = "FM-1 MIDI Learn Fork";
+    const VENDOR: &'static str = "Vitriol131 Community Fork";
+    const URL: &'static str = "https://github.com/Vitriol131/fm1-emu-test";
     const EMAIL: &'static str = "";
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
