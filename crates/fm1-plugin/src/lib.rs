@@ -392,7 +392,7 @@ impl Plugin for Fm1 {
                             continue;
                         }
                         matched = true;
-                        let value = if source >= 128 { raw_value * 127 / 127 } else { raw_value };
+                        let value = raw_value;
                         let previous = link.shared.midi_last[slot].swap(value, Ordering::Relaxed);
                         let code = match slot {
                             0..=7 => slot as i32,
