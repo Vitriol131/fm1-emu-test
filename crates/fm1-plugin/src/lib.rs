@@ -59,6 +59,9 @@ pub struct Fm1Params {
     pub firmware: Mutex<Firmware>,
     #[persist = "flash"]
     pub flash: Mutex<Vec<Sector>>,
+    /// Learned MIDI source assignments, saved with the host project (-1 means unassigned).
+    #[persist = "midi-map"]
+    pub midi_assignments: Mutex<Vec<i32>>,
     /// The recorder, as the machine's thread reports it to the window (not saved).
     pub rec: Mutex<RecView>,
 
@@ -163,6 +166,7 @@ impl Default for Fm1Params {
             editor_state: EguiState::from_size(960, 660),
             firmware: Mutex::new(Firmware::default()),
             flash: Mutex::new(Vec::new()),
+            midi_assignments: Mutex::new(vec![-1; 97]),
             rec: Mutex::new(RecView::default()),
             master: FloatParam::new("Master", 900.0 / 1023.0, FloatRange::Linear { min: 0.0, max: 1.0 })
                 .with_unit(" %")
@@ -243,6 +247,7 @@ impl Fm1 {
         if let Some(l) = &self.link {
             return l.clone();
         }
+        let saved_midi = self.params.midi_assignments.lock().unwrap().clone();
         let shared = Arc::new(Shared {
             view: Mutex::new(View {
                 lcd: vec![0; 240 * 240],
@@ -256,7 +261,7 @@ impl Fm1 {
                 late: 0,
             }),
             midi_learn: std::sync::atomic::AtomicI32::new(-1),
-            midi_map: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(-1)),
+            midi_map: std::array::from_fn(|i| std::sync::atomic::AtomicI32::new(*saved_midi.get(i).unwrap_or(&-1))),
             midi_last: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(-1)),
             midi_accum: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(0)),
             midi_master: std::sync::atomic::AtomicI32::new(-1),
