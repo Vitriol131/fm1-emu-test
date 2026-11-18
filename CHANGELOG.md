@@ -26,11 +26,15 @@ A commit or source edit alone does not mean that a feature has been built or tes
 
 **Verification:** source edits have been committed, but the latest state has not yet been recompiled and tested as a whole.
 
-### MIDI Learn
+### MIDI Learn — implementation work
 - The intended scope is all mouse-operable panel controls on both supported boards: FM-1's seven encoders, Master pot, buttons and selectors; SMK-37's eight encoders, 16 pads, four faders, pitch/mod wheels, buttons and selectors.
 - The SMK-37's 37 white and black musical keys are explicitly out of scope.
-- Source audit on this date found the existing MIDI Learn implementation still limited to CC-to-encoder mapping for the seven FM-1 encoders. Mouse handling exists for the additional controls, but MIDI routing to those controls has not yet been implemented.
-- No claim of complete implementation or reliable operation is made at this stage.
+- Implemented panel-control targeting for all of the above controls, with unique target slots; the SMK-37's 37 musical keys remain excluded from MIDI Learn while retaining their normal mouse-play behavior.
+- MIDI Learn accepts MIDI CC and note-on/note-off sources. Learned events are consumed before the normal firmware MIDI input path, then translated to the same internal key, encoder, analog, or Master-parameter actions used by the panel.
+- Added CC/note handling for encoder increments, button press/release, pad pressure/release, faders, pitch/mod wheels, and the FM-1 Master parameter.
+- Learned assignments are saved in the plugin's project state.
+- Added a unit test for target-slot coverage and explicit SMK keyboard exclusion.
+- These are committed source changes; compilation and live controller tests are still pending.
 
 ### Follow-up source review
 - **Core warning correction:** removed the redundant write to `synced` from the `sync!` macro. In the reported warning paths, the macro call returns immediately or is followed by the careful-operation path that sets `synced` again; the macro's write was therefore overwritten before it could be read. The macro still accounts for the uncommitted instruction count using the previous `synced` value.
