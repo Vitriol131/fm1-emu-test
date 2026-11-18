@@ -255,6 +255,10 @@ impl Fm1 {
                 starved: 0,
                 late: 0,
             }),
+            midi_learn: std::sync::atomic::AtomicI32::new(-1),
+            midi_map: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(-1)),
+            midi_last: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(-1)),
+            midi_accum: std::array::from_fn(|_| std::sync::atomic::AtomicI32::new(0)),
             quit: Default::default(),
         });
         let (tx, rx) = mpsc::channel();
@@ -355,6 +359,39 @@ impl Plugin for Fm1 {
             let len = midi_len(b[0]);
             if len == 0 {
                 continue;
+            }
+            // MIDI Learn and CC-to-encoder translation (FM-1's seven front-panel encoders).
+            if b[0] & 0xf0 == 0xb0 && b[2] > 0 {
+                if let Some(link) = self.link.as_ref() {
+                    let cc = b[1] as i32;
+                    let target = link.shared.midi_learn.load(std::sync::atomic::Ordering::Relaxed);
+                    if (0..7).contains(&target) {
+                        link.shared.midi_map[target as usize].store(cc, std::sync::atomic::Ordering::Relaxed);
+                        link.shared.midi_last[target as usize].store(b[2] as i32, std::sync::atomic::Ordering::Relaxed);
+                        link.shared.midi_accum[target as usize].store(0, std::sync::atomic::Ordering::Relaxed);
+                        link.shared.midi_learn.store(-1, std::sync::atomic::Ordering::Relaxed);
+                        continue;
+                    }
+                    let mut consumed = false;
+                    for i in 0..7 {
+                        if link.shared.midi_map[i].load(std::sync::atomic::Ordering::Relaxed) == cc {
+                            let value = b[2] as i32;
+                            let last = link.shared.midi_last[i].swap(value, std::sync::atomic::Ordering::Relaxed);
+                            if last >= 0 {
+                                let accum = link.shared.midi_accum[i].fetch_add(value - last, std::sync::atomic::Ordering::Relaxed) + value - last;
+                                let clicks = accum / 2;
+                                if clicks != 0 {
+                                    link.shared.midi_accum[i].fetch_sub(clicks * 2, std::sync::atomic::Ordering::Relaxed);
+                                    let enc = if i == 1 { 6 } else if i >= 2 { (i - 1) as u8 } else { i as u8 };
+                                    let _ = link.cmds.send(engine::Cmd::Enc { enc, clicks });
+                                }
+                            }
+                            consumed = true;
+                            break;
+                        }
+                    }
+                    if consumed { continue; }
+                }
             }
             if ch != 0 {
                 b[0] = (b[0] & 0xf0) | (ch - 1);
