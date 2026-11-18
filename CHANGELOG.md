@@ -29,3 +29,10 @@ A commit or source edit alone does not mean that a feature has been built or tes
 ### MIDI Learn
 - Work in progress. The branch is intended for development of MIDI Learn and contextual mapping in the FM-1 plugin.
 - No claim of complete implementation or reliable operation is made at this stage.
+
+### Follow-up source review
+- **Core warning correction:** removed the redundant write to `synced` from the `sync!` macro. In the reported warning paths, the macro call returns immediately or is followed by the careful-operation path that sets `synced` again; the macro's write was therefore overwritten before it could be read. The macro still accounts for the uncommitted instruction count using the previous `synced` value.
+- Rechecked the previously removed `blk`, `load` and `store_r` helpers: they have no remaining method call sites in the current source. Kept `sext`, which does have decoder call sites.
+- Confirmed that the GDB stub crate is explicitly a placeholder and its current source does not use `fm1-core`; removing that unused manifest dependency is consistent with the current implementation.
+
+**Verification:** the core source correction is committed, but a fresh `cargo build` and the core test suite have not yet been run on this commit. The full MIDI Learn implementation remains incomplete.
