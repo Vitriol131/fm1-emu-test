@@ -87,10 +87,10 @@ pub struct Shared {
     pub quit: AtomicBool,
     /// MIDI Learn: -2 waits for a panel-control click; non-negative values are hit codes.
     pub midi_learn: AtomicI32,
-    /// CC assignment/state slots for every supported mouse-operable panel control.
+    /// MIDI source assignment and value state for every supported mouse-operable panel control.
     pub midi_map: [AtomicI32; 97],
-    pub midi_last: [AtomicI32; 90],
-    pub midi_accum: [AtomicI32; 90],
+    pub midi_last: [AtomicI32; 97],
+    pub midi_accum: [AtomicI32; 97],
     /// A MIDI-controlled Master value waiting for the editor's ParamSetter.
     pub midi_master: AtomicI32,
 }
