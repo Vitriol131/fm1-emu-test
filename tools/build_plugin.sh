@@ -30,7 +30,7 @@ else
   (cd crates/fm1-plugin && cargo build --release)
   dylibs=(crates/fm1-plugin/target/release/libfm1_plugin.dylib)
 fi
-clap=$out/FM-1.clap
+clap=$out/FM-1-MIDI-Learn-Fork.clap
 rm -rf "$clap"
 mkdir -p "$clap/Contents/MacOS"
 lipo -create -output "$clap/Contents/MacOS/FM-1" "${dylibs[@]}"
@@ -40,8 +40,8 @@ cat > "$clap/Contents/Info.plist" <<EOF
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleExecutable</key><string>FM-1</string>
-  <key>CFBundleIdentifier</key><string>io.github.joakimeriksson.fm1-emu.clap</string>
+  <key>CFBundleExecutable</key><string>FM-1 MIDI Learn Fork</string>
+  <key>CFBundleIdentifier</key><string>io.github.vitriol131.fm1-midi-learn-fork.clap</string>
   <key>CFBundleName</key><string>FM-1</string>
   <key>CFBundlePackageType</key><string>BNDL</string>
   <key>CFBundleShortVersionString</key><string>$version</string>
@@ -55,7 +55,7 @@ sign "$clap"
 cmake -S crates/fm1-plugin/wrap -B "$out/build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DFM1_CLAP="$clap" \
   -DCMAKE_OSX_ARCHITECTURES="$(lipo -archs "$clap/Contents/MacOS/FM-1" | tr ' ' ';')" >/dev/null
 cmake --build "$out/build"
-au=$(find "$out/build" -maxdepth 2 -name "FM-1.component" -type d | head -1)
+au=$(find "$out/build" -maxdepth 2 -name "FM-1-MIDI-Learn-Fork.component" -type d | head -1)
 rm -rf "$out/FM-1.component"
 cp -R "$au" "$out/FM-1.component"
 # the Info.plist that names the AU to hosts (clap-wrapper's copy of it runs before the bundle's
@@ -65,7 +65,7 @@ rm -rf "$out/FM-1.component/Contents/PlugIns"
 mkdir -p "$out/FM-1.component/Contents/PlugIns"
 cp -R "$clap" "$out/FM-1.component/Contents/PlugIns/"
 sign "$out/FM-1.component"
-vst3=$(find "$out/build" -maxdepth 2 -name "FM-1.vst3" -type d | head -1)
+vst3=$(find "$out/build" -maxdepth 2 -name "FM-1-MIDI-Learn-Fork.vst3" -type d | head -1)
 rm -rf "$out/FM-1.vst3"
 cp -R "$vst3" "$out/FM-1.vst3"
 rm -rf "$out/FM-1.vst3/Contents/PlugIns"
@@ -84,4 +84,4 @@ cp -R "$out/FM-1.vst3" "$dst/VST3/"
 # (the AU host caches components: a new build is seen once it is told to look again)
 killall -9 AudioComponentRegistrar 2>/dev/null || true
 echo "installed in $dst"
-auval -v aumu Fm1s Fm1e
+auval -v aumu M1LF V131
